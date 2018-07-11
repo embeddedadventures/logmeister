@@ -1,10 +1,11 @@
 {
   "name": "logmeister",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A super simple and fast logger",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "start": "./node_modules/.bin/babel-node index.js"
+    "prepublish": "npm run compile",
+    "compile": "babel -d lib/ src/"
   },
   "author": "Embedded Adventures - Jessyka Alycia Amaral",
   "dependencies": {
@@ -15,6 +16,6 @@
     "delay": "^3.0.0",
     "moment": "^2.22.2"
   },
-  "license" : "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "homepage": "https://github.com/embeddedadventures/logmeister"
 }
