@@ -1,8 +1,7 @@
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
-import moment from 'moment';
-import delay from 'delay';
+const os = require('os');
+const fs = require('fs');
+const moment = require('moment');
+const delay = require('delay');
 
 const eol = os.EOL;
 
@@ -13,11 +12,15 @@ let canLog = true;
 let currentFileDate;
 let stream;
 let filename;
+let filenameArg;
+
+let writeArray = [];
 
 // Logs to file
-async function log(message, path) {
+async function log(message, path, fnArg) {
+	filenameArg = fnArg;
 	basepath = path;
-	filename = basepath + 'app.log';
+	filename = basepath + filenameArg + ".log";
 	await checkFileDate();
 	if (!stream) openFile();
 	await write(message);
@@ -32,7 +35,7 @@ async function checkFileDate() {
 			await delay(100);
 		}
 		closeFile();
-		let oldFilename = basepath + oldFileDate + '.log';
+		let oldFilename = basepath + filenameArg + oldFileDate + '.log';
 		fs.renameSync(filename, oldFilename);
 		oldFileDate = currentFileDate;
 		openFile();
@@ -40,14 +43,19 @@ async function checkFileDate() {
 }
 
 async function write(message) {
-	if (!stream) openFile();
-	while (!canLog) {
-		await delay(100);
+	if (!stream) {
+		let dateNow = moment(new Date).format("YYYY-MM-DD HH:mm:ss.SSS");
+		console.log(`${dateNow} info Logmeister Opening file`);
+		await openFile();
+	}
+	if (logging || !canLog) {
+		writeArray.push(message);
+		return;
 	}
 	logging = true;
 	canLog = stream.write(message + eol);
-	if (!canLog) write(message);
-	if (canLog) logging = false;
+	logging = false;
+	if (!canLog) writeArray.push(message);
 }
 
 // Open file stream
@@ -55,6 +63,15 @@ async function openFile() {
 	stream = fs.createWriteStream(filename, {flags: 'a'});
 	canLog = true;
 	stream.on('drain', () => {
+		logging = true;
+		while(writeArray.length>0) {
+			let isWritten = stream.write(writeArray.shift() + eol);
+			if (!isWritten) {
+				logging = false;
+				return;
+			}
+		}
+		logging = false;
 		canLog = true;
 	});
 }

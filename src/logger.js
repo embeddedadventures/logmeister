@@ -1,11 +1,11 @@
-import fileTransport from './file_transport';
-import consoleTransport from './console_transport';
-import moment from 'moment';
+const fileTransport = require('./file_transport');
+const consoleTransport = require('./console_transport');
+const moment = require('moment');
 
-module.exports = function log(level, processName, message, consoleLogLevels, fileLogLevels, path) {
+module.exports = function log(level, processName, message, consoleLogLevels, fileLogLevels, path, filename) {
 	if (fileLogLevels.indexOf(level) > -1){
 		let msg = format(level, processName, message);
-		fileTransport(msg, path);
+		fileTransport(msg, path, filename);
 	}
 	if (consoleLogLevels.indexOf(level) > -1){
 		let msg = format(level, processName, message);
